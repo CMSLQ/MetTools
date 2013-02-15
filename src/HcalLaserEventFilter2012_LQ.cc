@@ -1,9 +1,9 @@
 // -*- C++ -*-
 //
-// Package:    HcalLaserEventFilter2012_LQ
-// Class:      HcalLaserEventFilter2012_LQ
+// Package:    HcalLaserEventFilter2012
+// Class:      HcalLaserEventFilter2012
 // 
-/**\class HcalLaserEventFilter2012_LQ HcalLaserEventFilter2012_LQ.cc UserCode/HcalLaserEventFilter2012_LQ/src/HcalLaserEventFilter2012_LQ.cc
+/**\class HcalLaserEventFilter2012 HcalLaserEventFilter2012.cc UserCode/HcalLaserEventFilter2012/src/HcalLaserEventFilter2012.cc
 
  Description: [Remove known HCAL laser events in 2012 data]
 
@@ -41,14 +41,16 @@
 #include "DataFormats/Provenance/interface/RunID.h"
 #include "zlib.h"
 
+#include "FWCore/ParameterSet/interface/FileInPath.h"
+
 //
 // class declaration
 //
 
-class HcalLaserEventFilter2012_LQ : public edm::EDFilter {
+class HcalLaserEventFilter2012 : public edm::EDFilter {
 public:
-  explicit HcalLaserEventFilter2012_LQ(const edm::ParameterSet&);
-  ~HcalLaserEventFilter2012_LQ();
+  explicit HcalLaserEventFilter2012(const edm::ParameterSet&);
+  ~HcalLaserEventFilter2012();
   
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
   
@@ -97,7 +99,7 @@ using namespace std;
 //
 // constructors and destructor
 //
-HcalLaserEventFilter2012_LQ::HcalLaserEventFilter2012_LQ(const edm::ParameterSet& ps)
+HcalLaserEventFilter2012::HcalLaserEventFilter2012(const edm::ParameterSet& ps)
 {
   verbose_ = ps.getUntrackedParameter<bool>("verbose",false);
   prefix_  = ps.getUntrackedParameter<std::string>("prefix","");
@@ -109,7 +111,10 @@ HcalLaserEventFilter2012_LQ::HcalLaserEventFilter2012_LQ(const edm::ParameterSet
   forceFilterTrue_=ps.getUntrackedParameter<bool>("forceFilterTrue",false);
 
   minRunInFile=999999; maxRunInFile=1;
-  string eventFileName=ps.getParameter<string>("eventFileName");
+  //string eventFileName=ps.getParameter<string>("eventFileName");
+  edm::FileInPath eventFileName_FileInPath(ps.getParameter<edm::FileInPath>("eventFileName"));
+  string eventFileName = eventFileName_FileInPath.fullPath();
+  //
   if (verbose_) edm::LogInfo("HcalLaserHFFilter2012") << "HCAL laser event list from file "<<eventFileName;
   readEventListFile(eventFileName);
   std::sort(EventList_.begin(), EventList_.end());
@@ -118,7 +123,7 @@ HcalLaserEventFilter2012_LQ::HcalLaserEventFilter2012_LQ(const edm::ParameterSet
   if (maxrun_==-1 || maxrun_>maxRunInFile) maxrun_=maxRunInFile;
 }
 
-void HcalLaserEventFilter2012_LQ::addEventString(const string & eventString)
+void HcalLaserEventFilter2012::addEventString(const string & eventString)
 {
   // Loop through list of bad events, and if run is in allowed range, add bad event to EventList
   int run=0;
@@ -166,7 +171,7 @@ void HcalLaserEventFilter2012_LQ::addEventString(const string & eventString)
 
 #define LENGTH 0x2000
 
-void HcalLaserEventFilter2012_LQ::readEventListFile(const string & eventFileName)
+void HcalLaserEventFilter2012::readEventListFile(const string & eventFileName)
 {
   gzFile  file = gzopen (eventFileName.c_str(), "r");
   if (! file) {
@@ -221,7 +226,7 @@ void HcalLaserEventFilter2012_LQ::readEventListFile(const string & eventFileName
 }
 
 
-HcalLaserEventFilter2012_LQ::~HcalLaserEventFilter2012_LQ()
+HcalLaserEventFilter2012::~HcalLaserEventFilter2012()
 {
  
    // do anything here that needs to be done at desctruction time
@@ -236,7 +241,7 @@ HcalLaserEventFilter2012_LQ::~HcalLaserEventFilter2012_LQ()
 
 // ------------ method called on each new Event  ------------
 bool
-HcalLaserEventFilter2012_LQ::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
+HcalLaserEventFilter2012::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
   int run = iEvent.id().run();
   // if run is outside filter range, then always return true
@@ -267,47 +272,47 @@ HcalLaserEventFilter2012_LQ::filter(edm::Event& iEvent, const edm::EventSetup& i
 
 // ------------ method called once each job just before starting event loop  ------------
 void 
-HcalLaserEventFilter2012_LQ::beginJob()
+HcalLaserEventFilter2012::beginJob()
 {
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
 void 
-HcalLaserEventFilter2012_LQ::endJob() {
+HcalLaserEventFilter2012::endJob() {
  if (WriteBadToFile_) outfile_.close();
 }
 
 // ------------ method called when starting to processes a run  ------------
 bool 
-HcalLaserEventFilter2012_LQ::beginRun(edm::Run&, edm::EventSetup const&)
+HcalLaserEventFilter2012::beginRun(edm::Run&, edm::EventSetup const&)
 { 
   return true;
 }
 
 // ------------ method called when ending the processing of a run  ------------
 bool 
-HcalLaserEventFilter2012_LQ::endRun(edm::Run&, edm::EventSetup const&)
+HcalLaserEventFilter2012::endRun(edm::Run&, edm::EventSetup const&)
 {
   return true;
 }
 
 // ------------ method called when starting to processes a luminosity block  ------------
 bool 
-HcalLaserEventFilter2012_LQ::beginLuminosityBlock(edm::LuminosityBlock&, edm::EventSetup const&)
+HcalLaserEventFilter2012::beginLuminosityBlock(edm::LuminosityBlock&, edm::EventSetup const&)
 {
   return true;
 }
 
 // ------------ method called when ending the processing of a luminosity block  ------------
 bool 
-HcalLaserEventFilter2012_LQ::endLuminosityBlock(edm::LuminosityBlock&, edm::EventSetup const&)
+HcalLaserEventFilter2012::endLuminosityBlock(edm::LuminosityBlock&, edm::EventSetup const&)
 {
   return true;
 }
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
 void
-HcalLaserEventFilter2012_LQ::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+HcalLaserEventFilter2012::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   //The following says we do not know what parameters are allowed so do no validation
   // Please change this to state exactly what you do use, even if it is no parameters
   edm::ParameterSetDescription desc;
@@ -315,4 +320,4 @@ HcalLaserEventFilter2012_LQ::fillDescriptions(edm::ConfigurationDescriptions& de
   descriptions.addDefault(desc);
 }
 //define this as a plug-in
-DEFINE_FWK_MODULE(HcalLaserEventFilter2012_LQ);
+DEFINE_FWK_MODULE(HcalLaserEventFilter2012);
